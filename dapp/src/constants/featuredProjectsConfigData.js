@@ -22,7 +22,7 @@ export const featuredProjectsConfigData = [
     projectFullName: "Stellar Community Fund - Public Goods Award",
     projectType: "GENERIC",
     logoImageLink:
-      "https://communityfund.stellar.org/_next/image?url=%2Fsvg%2FSCFLogo.svg&amp;w=96&amp;q=75",
+      "https://communityfund.stellar.org/_next/image?url=%2Fsvg%2FSCFLogo.svg&w=96&q=75",
     description: "Stellar Community Fund Voting Platform for Public Goods Award",
     organizationName: "Stellar Community Fund",
     officials: {
