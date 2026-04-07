@@ -58,8 +58,26 @@ const FlowProgressModal: React.FC<FlowProgressModalProps> = ({
 
   return (
     <Modal onClose={handleClose}>
-      {step >= 6 && step <= 9 ? (
-        <ProgressStep step={step - 5} signLabel={signLabel} />
+      {error ? (
+        <div
+          className="flex flex-col sm:flex-row items-center gap-6 sm:gap-[18px] p-4 sm:p-6"
+          data-testid="flow-error"
+        >
+          <img
+            src="/images/wrong.svg"
+            alt="Error"
+            className="w-40 h-40 sm:w-auto sm:h-auto"
+          />
+          <div className="flex-grow flex flex-col gap-5 text-center sm:text-left">
+            <p className="text-lg sm:text-xl font-bold text-red-600">
+              Something went wrong
+            </p>
+            <p className="text-sm sm:text-base text-secondary">{error}</p>
+            <div className="flex justify-end">
+              <Button onClick={handleClose}>Close</Button>
+            </div>
+          </div>
+        </div>
       ) : isSuccessful ? (
         <div
           className="flex flex-col sm:flex-row items-center gap-6 sm:gap-[18px] p-4 sm:p-6"
@@ -85,29 +103,8 @@ const FlowProgressModal: React.FC<FlowProgressModalProps> = ({
             </div>
           </div>
         </div>
-      ) : error ? (
-        <div
-          className="flex flex-col sm:flex-row items-center gap-6 sm:gap-[18px] p-4 sm:p-6"
-          data-testid="flow-error"
-        >
-          <img
-            src="/images/wrong.svg"
-            alt="Error"
-            className="w-40 h-40 sm:w-auto sm:h-auto"
-          />
-          <div className="flex-grow flex flex-col gap-5 text-center sm:text-left">
-            <p className="text-lg sm:text-xl font-bold text-red-600">
-              Something went wrong
-            </p>
-            <p className="text-sm sm:text-base text-secondary">{error}</p>
-            <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-[18px]">
-              <Button type="secondary" onClick={handleClose}>
-                Close
-              </Button>
-              <Button onClick={() => setError(null)}>Try Again</Button>
-            </div>
-          </div>
-        </div>
+      ) : step >= 6 && step <= 9 ? (
+        <ProgressStep step={step - 5} signLabel={signLabel} />
       ) : (
         children
       )}

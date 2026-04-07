@@ -33,16 +33,22 @@ export function parseContractError(error: any): string {
       /topics:\[fn_call,[^,]+,\s*([a-zA-Z0-9_]+)\]/,
     );
     const fnName = fnMatch?.[1];
+    const where = fnName ? ` in ${fnName}()` : "";
+    const hasInvalidInputPattern = /UnreachableCodeReached|InvalidAction/i.test(
+      errorMessage,
+    );
 
     if (
-      /UnreachableCodeReached|InvalidAction/i.test(errorMessage) ||
-      /build_commitments_from_votes/.test(errorMessage)
+      hasInvalidInputPattern &&
+      fnName === "build_commitments_from_votes"
     ) {
-      const where = fnName ? ` in ${fnName}()` : "";
       return `Invalid input for contract execution${where}. For anonymous voting, ensure your key file matches this proposal and try again.`;
     }
 
-    const where = fnName ? ` in ${fnName}()` : "";
+    if (hasInvalidInputPattern) {
+      return `Invalid input for contract execution${where}. Please verify proposal inputs and try again.`;
+    }
+
     return `Contract VM error${where}. Please retry. If the issue persists, check project configuration.`;
   }
 

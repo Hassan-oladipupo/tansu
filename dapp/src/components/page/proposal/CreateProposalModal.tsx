@@ -315,67 +315,34 @@ const CreateProposalModal = () => {
   const startProposalCreation = async (files: File[]) => {
     try {
       setIsLoading(true);
-      // Step progression handled by FlowService onProgress: 7-sign, 8-upload, 9-send
       setStep(6);
 
-      // Validate outcomes before submission - only if outcomes are configured
-      const hasAnyOutcome =
-        showApproveOutcome || showRejectOutcome || showCancelledOutcome;
-      if (hasAnyOutcome && !validateApproveOutcome(true)) {
-        throw new Error("Invalid approved outcome configuration");
-      }
-
-      // 2️⃣  Calculate voting end timestamp & build proposal transaction
-      // Ensure at least 25h window between now and voting end
+      // Voting end timestamp — clamp to [25h, 30d] from now
       let targetTs = selectedDate.getTime();
-
-      // Validate that we have a valid timestamp
       if (isNaN(targetTs) || targetTs <= 0 || !isFinite(targetTs)) {
         throw new Error(`Invalid voting end date: ${selectedDate}`);
       }
-
       const min25hMs = Date.now() + 25 * 60 * 60 * 1000;
-      if (targetTs < min25hMs) {
-        targetTs = min25hMs;
-      }
-
-      // Cap to 30 days max by using existing validation but double-check here as well
       const max30dMs = Date.now() + 30 * 24 * 60 * 60 * 1000;
-      if (targetTs > max30dMs) {
-        targetTs = max30dMs;
-      }
-
+      targetTs = Math.max(min25hMs, Math.min(max30dMs, targetTs));
       const votingEndsAt = Math.floor(targetTs / 1000);
 
-      // Prepare contract outcomes array [approved, rejected, cancelled]
-      // Contract execution data stays onchain; outcomes must be provided in order without gaps.
-      const rawContractOutcomes: (OutcomeContract | null)[] = [
-        approveMode === "contract" && approveContract?.address?.trim()
-          ? approveContract
-          : null,
-        rejectMode === "contract" && rejectContract?.address?.trim()
-          ? rejectContract
-          : null,
-        cancelledMode === "contract" && cancelledContract?.address?.trim()
-          ? cancelledContract
-          : null,
-      ];
+      // Collect valid outcome contracts (address + function both required)
+      const collectOutcome = (
+        mode: "xdr" | "contract" | "none",
+        contract: OutcomeContract | null,
+      ): OutcomeContract | null => {
+        if (mode !== "contract") return null;
+        if (!contract?.address?.trim() || !contract?.execute_fn?.trim())
+          return null;
+        return contract;
+      };
 
-      // Prevent submitting reject/cancel contracts without an approve contract first.
-      const hasGap = rawContractOutcomes.some(
-        (entry, idx) =>
-          !entry && rawContractOutcomes.slice(idx + 1).some(Boolean),
-      );
-      if (hasGap) {
-        throw new Error(
-          "Add contract outcomes in order (approve, then reject, then cancel) without skipping earlier steps.",
-        );
-      }
-
-      const contractOutcomes = rawContractOutcomes.filter(
-        (oc): oc is OutcomeContract =>
-          !!oc && !!oc.address && oc.address.trim() !== "",
-      );
+      const contractOutcomes = [
+        collectOutcome(approveMode, approveContract),
+        collectOutcome(rejectMode, rejectContract),
+        collectOutcome(cancelledMode, cancelledContract),
+      ].filter((oc): oc is OutcomeContract => oc !== null);
 
       const { createProposalFlow } = await import("@service/FlowService");
 
@@ -383,27 +350,25 @@ const CreateProposalModal = () => {
         projectName: projectName!,
         proposalName,
         proposalFiles: files,
-        votingEndsAt: votingEndsAt,
-        publicVoting: !isAnonymousVoting ? true : false,
+        votingEndsAt,
+        publicVoting: !isAnonymousVoting,
         outcomeContracts: contractOutcomes,
-        ...(votingType === "token" && tokenContract && { tokenContract }),
+        ...(votingType === "token" && tokenContract
+          ? { tokenContract }
+          : {}),
         onProgress: setStep,
       });
 
       setProposalId(proposalId);
 
-      // 3️⃣  Compute IPFS link for UI reference
       const { calculateDirectoryCid } = await import("utils/ipfsFunctions");
       const cid = await calculateDirectoryCid(files);
       setIpfsLink(getIpfsBasicLink(cid));
 
-      // Success
       setIsSuccessful(true);
-      setStep(0);
     } catch (err: any) {
       console.error(err.message);
       setError(err.message);
-      setStep(0);
     } finally {
       setIsLoading(false);
       setIsUploading(false);
@@ -414,12 +379,10 @@ const CreateProposalModal = () => {
     try {
       checkSubmitAvailability();
 
-      // Prepare files once and reuse across steps to ensure consistent CID
       const files = prepareProposalFiles();
       setPreparedFiles(files);
 
       if (isAnonymousVoting && (!existingAnonConfig || resetAnonKeys)) {
-        // Show explicit config step
         setStep(5);
         return;
       }
@@ -428,7 +391,6 @@ const CreateProposalModal = () => {
     } catch (err: any) {
       console.error(err.message);
       setError(err.message);
-      setStep(0);
     }
   };
 
