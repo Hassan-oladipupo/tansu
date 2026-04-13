@@ -22,9 +22,10 @@ mod scf_token;
 
 mod errors;
 mod events;
+mod types;
+
 #[cfg(test)]
 mod tests;
-mod types;
 
 #[contract]
 pub struct SCFMembership;
@@ -210,6 +211,11 @@ pub trait SCFGovernanceTrait {
     /// * If the token does not exist.
     /// * If the trait does not exist.
     /// * If the new value is out of bound.
+    ///
+    /// # Events
+    ///
+    /// * topics - `["set_trait", trait_key: String]`
+    /// * data - `[token_id: u32, new_value: i128]`
     fn set_trait(e: &Env, token_id: u32, trait_key: String, new_value: i128);
 
     /// Returns the Uniform Resource Identifier (URI) for trait definition.

@@ -2,10 +2,10 @@
 
 use crate::{
     SCFGovernanceTrait, SCFMembership, SCFMembershipArgs, SCFMembershipClient, SCFTokenTrait,
-    errors, types,
+    errors, events, types,
 };
 use soroban_sdk::{
-    Env, I256, InvokeError, String, Symbol, Vec, contractimpl, panic_with_error, vec,
+    Address, Env, I256, InvokeError, String, Symbol, Vec, contractimpl, panic_with_error, vec,
 };
 
 #[contractimpl]
@@ -35,6 +35,9 @@ impl SCFGovernanceTrait for SCFMembership {
     }
 
     fn set_trait(e: &Env, token_id: u32, trait_key: String, new_value: i128) {
+        let admin: Address = e.storage().instance().get(&types::DataKey::Admin).unwrap();
+        admin.require_auth();
+
         let role_key = String::from_str(e, "role");
         if trait_key != role_key {
             panic_with_error!(e, errors::NonFungibleTokenError::TraitUnSettable);
@@ -47,6 +50,13 @@ impl SCFGovernanceTrait for SCFMembership {
         e.storage()
             .persistent()
             .set(&types::NFTStorageKey::Role(token_id), &new_value);
+
+        events::SetTrait {
+            trait_key,
+            token_id,
+            new_value,
+        }
+        .publish(e);
     }
 
     fn trait_metadata_uri(e: &Env) -> String {
