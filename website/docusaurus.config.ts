@@ -37,6 +37,9 @@ const config: Config = {
 
   markdown: {
     mermaid: true,
+    mdx1Compat: {
+      comments: true,
+    },
   },
 
   presets: [
