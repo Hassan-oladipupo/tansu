@@ -220,6 +220,12 @@ export interface Client {
     },
     options?: MethodOptions,
   ) => Promise<AssembledTransaction<string>>;
+  /**
+   * Construct and simulate a next_token_id transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   */
+  next_token_id: (
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<u32>>;
 }
 export declare class Client extends ContractClient {
   readonly options: ContractClientOptions;
@@ -266,5 +272,6 @@ export declare class Client extends ContractClient {
     clawback: (json: string) => AssembledTransaction<null>;
     owner_of: (json: string) => AssembledTransaction<string>;
     token_uri: (json: string) => AssembledTransaction<string>;
+    next_token_id: (json: string) => AssembledTransaction<number>;
   };
 }

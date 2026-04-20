@@ -174,6 +174,13 @@ export interface Client {
     { token_id }: { token_id: u32 },
     options?: MethodOptions,
   ) => Promise<AssembledTransaction<string>>;
+
+  /**
+   * Construct and simulate a next_token_id transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   */
+  next_token_id: (
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<u32>>;
 }
 export class Client extends ContractClient {
   static async deploy<T = Client>(
@@ -223,6 +230,7 @@ export class Client extends ContractClient {
         "AAAAAgAAAAAAAAAAAAAADU5GVFN0b3JhZ2VLZXkAAAAAAAADAAAAAQAAAAAAAAAFT3duZXIAAAAAAAABAAAABAAAAAEAAAAAAAAAB0JhbGFuY2UAAAAAAQAAABMAAAABAAAAAAAAAARSb2xlAAAAAQAAAAQ=",
         "AAAABAAAAAAAAAAAAAAAFU5vbkZ1bmdpYmxlVG9rZW5FcnJvcgAAAAAAAAUAAAAkSW5kaWNhdGVzIGEgbm9uLWV4aXN0ZW50IGB0b2tlbl9pZGAuAAAAEE5vbkV4aXN0ZW50VG9rZW4AAADJAAAAJUluZGljYXRlcyBhIG5vbi1leGlzdGVudCBgdHJhaXRfa2V5YC4AAAAAAAARVHJhaXREb2VzTm90RXhpc3QAAAAAAADKAAAAKUluZGljYXRlcyB0aGF0IGB0cmFpdF9rZXlgIGNhbm5vdCBiZSBzZXQuAAAAAAAAD1RyYWl0VW5TZXR0YWJsZQAAAADLAAAAAAAAABBSb2xlRG9lc05vdEV4aXN0AAAAzAAAAAAAAAAQTnFnQ29udHJhY3RFcnJvcgAAAM0=",
         "AAAABQAAAAAAAAAAAAAABE1pbnQAAAABAAAABG1pbnQAAAACAAAAAAAAAAJ0bwAAAAAAEwAAAAEAAAAAAAAACHRva2VuX2lkAAAABAAAAAAAAAAC",
+        "AAAABQAAAAAAAAAAAAAACFNldFRyYWl0AAAAAQAAAAlzZXRfdHJhaXQAAAAAAAADAAAAAAAAAAl0cmFpdF9rZXkAAAAAAAAQAAAAAQAAAAAAAAAIdG9rZW5faWQAAAAEAAAAAAAAAAAAAAAJbmV3X3ZhbHVlAAAAAAAACwAAAAAAAAAC",
         "AAAAAAAAAAAAAAAEbWludAAAAAEAAAAAAAAAAnRvAAAAAAATAAAAAQAAAAQ=",
         "AAAAAAAAAAAAAAAEbmFtZQAAAAAAAAABAAAAEA==",
         "AAAAAAAAAAAAAAAGc3ltYm9sAAAAAAAAAAAAAQAAABA=",
@@ -232,6 +240,7 @@ export class Client extends ContractClient {
         "AAAAAAAAAAAAAAAIb3duZXJfb2YAAAABAAAAAAAAAAh0b2tlbl9pZAAAAAQAAAABAAAAEw==",
         "AAAAAAAAAAAAAAAJdG9rZW5fdXJpAAAAAAAAAQAAAAAAAAAIdG9rZW5faWQAAAAEAAAAAQAAABA=",
         "AAAAAAAAAAAAAAANX19jb25zdHJ1Y3RvcgAAAAAAAAYAAAAAAAAABWFkbWluAAAAAAAAEwAAAAAAAAAEbmFtZQAAABAAAAAAAAAABnN5bWJvbAAAAAAAEAAAAAAAAAADdXJpAAAAABAAAAAAAAAACXVyaV90cmFpdAAAAAAAABAAAAAAAAAADG5xZ19jb250cmFjdAAAABMAAAAA",
+        "AAAAAAAAAAAAAAANbmV4dF90b2tlbl9pZAAAAAAAAAAAAAABAAAABA==",
       ]),
       options,
     );
@@ -250,5 +259,6 @@ export class Client extends ContractClient {
     clawback: this.txFromJSON<null>,
     owner_of: this.txFromJSON<string>,
     token_uri: this.txFromJSON<string>,
+    next_token_id: this.txFromJSON<u32>,
   };
 }

@@ -979,6 +979,9 @@ export interface Client {
    * Returns the Default badge weight (1) if the address has no badges
    * assigned or is not a registered member.
    *
+   * There is a special case to use Neural Quorum Governance instead of
+   * badges if we are using a specific project.
+   *
    * # Arguments
    * * `env` - The environment object
    * * `project_key` - The project key identifier
