@@ -109,7 +109,7 @@ async function getProposalPages(project_name: string): Promise<number | null> {
   const project_key = deriveProjectKey(project_name);
 
   try {
-    const checkPageExist = async (page: number) => {
+    const hasProposalsOnPage = async (page: number) => {
       try {
         const res = await Tansu.get_dao({
           project_key,
@@ -126,20 +126,28 @@ async function getProposalPages(project_name: string): Promise<number | null> {
       }
     };
 
-    for (let page = 1; ; page *= 2) {
-      const isPageExist = await checkPageExist(page);
-      if (isPageExist) continue;
-      if (page <= 2) return 1;
-      let f = page / 2,
-        t = page;
-      while (t - f > 1) {
-        const m = Math.floor((f + t) / 2);
-        const isPageExist = await checkPageExist(m);
-        if (isPageExist) f = m;
-        else t = m;
-      }
-      return f;
+    if (!(await hasProposalsOnPage(0))) {
+      return 1;
     }
+
+    let low = 0;
+    let high = 1;
+
+    while (await hasProposalsOnPage(high)) {
+      low = high;
+      high *= 2;
+    }
+
+    while (high - low > 1) {
+      const middle = Math.floor((low + high) / 2);
+      if (await hasProposalsOnPage(middle)) {
+        low = middle;
+      } else {
+        high = middle;
+      }
+    }
+
+    return low + 1;
   } catch {
     // Never show toast error for proposal pages not found
     return null;

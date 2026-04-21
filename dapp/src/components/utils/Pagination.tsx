@@ -9,6 +9,18 @@ const Pagination: React.FC<PaginationProps> = ({
   currentPage,
   onPageChange,
 }) => {
+  const pageWindowSize = 15;
+  const halfWindow = Math.floor(pageWindowSize / 2);
+  const startPage = Math.max(
+    1,
+    Math.min(currentPage - halfWindow, totalPage - pageWindowSize + 1),
+  );
+  const endPage = Math.min(totalPage, startPage + pageWindowSize - 1);
+  const pages = Array.from(
+    { length: Math.max(0, endPage - startPage + 1) },
+    (_, index) => startPage + index,
+  );
+
   return (
     <div className="p-[6px_18px] flex items-center gap-[24px] bg-white">
       <button
@@ -30,22 +42,19 @@ const Pagination: React.FC<PaginationProps> = ({
         </svg>
       </button>
       <div className="flex gap-3">
-        {Array.from({ length: totalPage }, (_, index) => {
-          const page = Math.max(currentPage - 7, 0) + index + 1;
-          return (
-            <button
-              key={index}
-              className={`p-[6px_10px] w-8 h-8 ${page == currentPage && "border border-primary"}`}
-              onClick={() => onPageChange(page)}
-            >
-              <p className="leading-5 text-xl text-primary">{page}</p>
-            </button>
-          );
-        })}
+        {pages.map((page) => (
+          <button
+            key={page}
+            className={`p-[6px_10px] w-8 h-8 ${page === currentPage ? "border border-primary" : ""}`}
+            onClick={() => onPageChange(page)}
+          >
+            <p className="leading-5 text-xl text-primary">{page}</p>
+          </button>
+        ))}
       </div>
       <button
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage == totalPage}
+        onClick={() => onPageChange(Math.min(totalPage, currentPage + 1))}
+        disabled={currentPage === totalPage}
         className="disabled:opacity-50"
       >
         <svg

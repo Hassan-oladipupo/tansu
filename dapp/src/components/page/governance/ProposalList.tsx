@@ -21,8 +21,11 @@ const ProposalList: React.FC = () => {
   const fetchProposalPages = async () => {
     try {
       if (projectName) {
-        const page = await getProposalPages(projectName);
-        setTotalPage(page ?? 0);
+        const normalizedTotalPage = Math.max(1, (await getProposalPages(projectName)) ?? 1);
+        setTotalPage(normalizedTotalPage);
+        setCurrentPage((previousPage) =>
+          Math.min(Math.max(previousPage, 0), normalizedTotalPage - 1),
+        );
       }
     } catch (err: any) {
       toast.error("Proposal list", err.message);
@@ -51,9 +54,16 @@ const ProposalList: React.FC = () => {
     fetchProposalPages();
   }, [projectName]);
 
+  const handlePageChange = (page: number) => {
+    if (totalPage <= 0) return;
+    setCurrentPage(Math.min(Math.max(page, 0), totalPage - 1));
+  };
+
   useEffect(() => {
-    fetchProposalData(currentPage);
-  }, [currentPage, projectName]);
+    if (totalPage > 0) {
+      fetchProposalData(currentPage);
+    }
+  }, [currentPage, projectName, totalPage]);
 
   return (
     <>
@@ -77,7 +87,7 @@ const ProposalList: React.FC = () => {
           <Pagination
             totalPage={totalPage}
             currentPage={currentPage + 1}
-            onPageChange={(page: number) => setCurrentPage(page - 1)}
+            onPageChange={(page: number) => handlePageChange(page - 1)}
           />
         </div>
       )}
